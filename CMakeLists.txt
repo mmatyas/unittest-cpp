@@ -11,8 +11,6 @@ option(UTPP_AMPLIFY_WARNINGS
     "Set this to OFF if you wish to use CMake default warning levels; should generally only use to work around support issues for your specific compiler"
     ON)
 
-set(LIB_SUFFIX "" CACHE STRING "Identifier to add to end of lib directory name e.g. 64 for lib64")
-
 if (MSVC)
 	# CHECK_CXX_COMPILER_FLAG could be used
 	# but MSVC version is preferred for feature requirements
@@ -96,14 +94,6 @@ if(NOT ${UTPP_INCLUDE_TESTS_IN_BUILD})
     set_target_properties(TestUnitTest++ PROPERTIES EXCLUDE_FROM_ALL 1)
 endif()
 
-# add install targets
-# need a custom install path?
-# define CMAKE_INSTALL_PREFIX to change root folder
-if(${UTPP_USE_PLUS_SIGN})
-	set (UTPP_INSTALL_DESTINATION "include/UnitTest++")
-else()
-	set (UTPP_INSTALL_DESTINATION "include/UnitTestPP")
-endif()
 
 target_include_directories( UnitTest++
 	PUBLIC
@@ -112,34 +102,3 @@ target_include_directories( UnitTest++
 	) 
 set_target_properties(UnitTest++ PROPERTIES DEBUG_POSTFIX "-d")
 set_target_properties(TestUnitTest++ PROPERTIES DEBUG_POSTFIX "-d")
-
-set(config_install_dir_ lib${LIB_SUFFIX}/cmake/${PROJECT_NAME})
-set(targets_export_name_ "${PROJECT_NAME}Targets")
-include(CMakePackageConfigHelpers)
-write_basic_package_version_file(
-	cmake/UnitTest++ConfigVersion.cmake
-	VERSION ${UnitTest++_VERSION}
-	COMPATIBILITY SameMajorVersion
-	)
-
-install(TARGETS UnitTest++ EXPORT "${targets_export_name_}" DESTINATION lib${LIB_SUFFIX})
-install(FILES ${headers_} DESTINATION ${UTPP_INSTALL_DESTINATION})
-install(FILES ${platformHeaders_} DESTINATION ${UTPP_INSTALL_DESTINATION}/${platformDir_})
-install(FILES 
-	cmake/UnitTest++Config.cmake 
-	${CMAKE_CURRENT_BINARY_DIR}/cmake/UnitTest++ConfigVersion.cmake
-	DESTINATION "${config_install_dir_}")
-install(EXPORT "${targets_export_name_}" NAMESPACE "UnitTest++::" DESTINATION "${config_install_dir_}")
-
-set(prefix      ${CMAKE_INSTALL_PREFIX})
-set(exec_prefix ${CMAKE_INSTALL_PREFIX}/bin)
-set(libdir      ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX})
-set(includedir  ${CMAKE_INSTALL_PREFIX}/include/UnitTest++)
-configure_file("UnitTest++.pc.in" "UnitTest++.pc" @ONLY)
-if(${CMAKE_SYSTEM_NAME} STREQUAL "FreeBSD")
-    set(pkgconfdir  ${CMAKE_INSTALL_PREFIX}/libdata/pkgconfig)
-else()
-    set(pkgconfdir  ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}/pkgconfig)
-endif()
-install(FILES       "${CMAKE_CURRENT_BINARY_DIR}/UnitTest++.pc"
-        DESTINATION "${pkgconfdir}")
